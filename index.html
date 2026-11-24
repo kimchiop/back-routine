@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Back routine</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2E6255">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Back routine">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F3F0; --surface:#FFFFFF; --ink:#1F2529; --muted:#5F676C; --line:#D9DCD6;
+  --spruce:#2E6255; --spruce-soft:#DCE8E3; --amber:#C98A16; --amber-soft:#F6E7C4; --warn:#9A3B2B;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131A1C; --surface:#1B2427; --ink:#E6EAE7; --muted:#9AA4A6; --line:#2C373A;
+    --spruce:#79BCA8; --spruce-soft:#203A33; --amber:#F0C062; --amber-soft:#3A3120; --warn:#E59A88;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131A1C; --surface:#1B2427; --ink:#E6EAE7; --muted:#9AA4A6; --line:#2C373A;
+  --spruce:#79BCA8; --spruce-soft:#203A33; --amber:#F0C062; --amber-soft:#3A3120; --warn:#E59A88;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{max-width:560px;margin:0 auto;padding:28px 18px 56px}
+h1,h2{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+h1{font-size:2.1rem;line-height:1.05;font-weight:700}
+h2{font-size:1.25rem;font-weight:700}
+.date{color:var(--muted);margin:6px 0 0}
+/* spine */
+.spine{display:flex;gap:5px;margin:22px 0 8px;align-items:flex-end}
+.vert{flex:1;height:30px;border-radius:7px 7px 9px 9px;background:var(--line);position:relative}
+.vert.done{background:var(--spruce)}
+.vert.today{outline:2px solid var(--amber);outline-offset:2px}
+.vert.part{background:linear-gradient(to top,var(--spruce) 45%,var(--line) 45%)}
+.spine-note{display:flex;justify-content:space-between;color:var(--muted);font-size:.88rem}
+.streak{color:var(--ink);font-weight:700}
+/* phase */
+.phase{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:26px 0 6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px}
+.phase button{font:inherit;font-size:.92rem;border:0;background:transparent;color:var(--muted);padding:9px 4px;border-radius:10px;cursor:pointer;line-height:1.2}
+.phase button small{display:block;font-size:.76rem;opacity:.85}
+.phase button[aria-pressed="true"]{background:var(--spruce);color:var(--surface);font-weight:700}
+:root[data-theme="dark"] .phase button[aria-pressed="true"]{color:#0F1517}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .phase button[aria-pressed="true"]{color:#0F1517}}
+.hint{color:var(--muted);font-size:.88rem;margin:4px 2px 0}
+section{margin-top:34px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.sec-head span{color:var(--muted);font-size:.9rem;white-space:nowrap}
+ol,ul{list-style:none;margin:0;padding:0}
+.item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:8px}
+.item.checked{background:var(--spruce-soft);border-color:transparent}
+.item.checked .name{text-decoration:line-through;text-decoration-color:var(--spruce);text-decoration-thickness:2px}
+.check{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--spruce);background:transparent;cursor:pointer;display:grid;place-items:center;margin-top:1px;padding:0}
+.check svg{opacity:0;width:15px;height:15px}
+.item.checked .check{background:var(--spruce)}
+.item.checked .check svg{opacity:1}
+.body{flex:1;min-width:0}
+.name{font-weight:700}
+.dose{color:var(--spruce);font-weight:700;font-size:.93rem}
+.how{color:var(--muted);font-size:.93rem;margin-top:2px}
+.timer{font:inherit;font-size:.88rem;font-weight:700;margin-top:8px;border:1.5px solid var(--spruce);color:var(--spruce);background:transparent;border-radius:999px;padding:4px 13px;cursor:pointer;min-width:92px}
+.timer.running{background:var(--amber-soft);border-color:var(--amber);color:var(--ink)}
+.counter{display:flex;align-items:center;gap:14px;margin-top:8px}
+.counter button{font:inherit;font-weight:700;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--spruce);background:transparent;color:var(--spruce);cursor:pointer;font-size:1.2rem;line-height:1}
+.counter output{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.5rem;font-weight:700;min-width:3.2ch;text-align:center}
+.pain{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.pain-row{display:flex;align-items:center;gap:14px}
+.pain input{flex:1;accent-color:var(--spruce);height:28px}
+.pain output{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.6rem;font-weight:700;min-width:2ch;text-align:right}
+.pain-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:.82rem}
+.trend{display:flex;gap:4px;align-items:flex-end;height:44px;margin-top:12px}
+.trend div{flex:1;background:var(--amber);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.trend div.empty{background:var(--line);height:2px}
+.flags{margin-top:40px;border-left:3px solid var(--warn);padding:2px 0 2px 14px;font-size:.93rem}
+.flags p{margin:0 0 6px}
+.flags strong{color:var(--warn)}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;color:var(--muted);font-size:.85rem;gap:10px}
+.linkbtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
+.fig{margin:10px 0 2px;background:var(--bg);border-radius:10px;padding:6px 8px;max-width:300px}
+.fig svg{display:block;width:100%;height:auto;fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.fig .gnd{stroke:var(--line);stroke-width:2}
+.fig .hd{fill:var(--ink);stroke:none}
+.fig .prop{stroke:var(--muted);stroke-width:2.5}
+.fig .acc{stroke:var(--amber);stroke-width:3;stroke-dasharray:5 5}
+.item.checked .fig{background:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.item{transition:background .2s}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Back routine</h1>
+  <p class="date" id="date"></p>
+
+  <div class="spine" id="spine" aria-label="Last 14 days"></div>
+  <div class="spine-note"><span>Last 14 days</span><span class="streak" id="streak"></span></div>
+
+  <div class="phase" role="group" aria-label="Phase">
+    <button data-phase="1">Phase 1<small>Weeks 1–2</small></button>
+    <button data-phase="2">Phase 2<small>Weeks 3–4</small></button>
+    <button data-phase="3">Phase 3<small>Week 5+</small></button>
+  </div>
+  <p class="hint">Move up a phase when everything feels easy and pain-free for a full week.</p>
+
+  <section>
+    <div class="sec-head"><h2>Before you sit</h2><span>3 min, right after waking</span></div>
+    <ul id="morning"></ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>During the day</h2><span>at your desk, 2–3 per break</span></div>
+    <ul id="day"></ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Main session</h2><span>about 15 min</span></div>
+    <ol id="main"></ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>How’s your back today?</h2><span>0 = no pain</span></div>
+    <div class="pain">
+      <div class="pain-row">
+        <input type="range" min="0" max="10" step="1" id="pain" aria-label="Pain level from 0 to 10">
+        <output id="painOut">–</output>
+      </div>
+      <div class="pain-scale"><span>None</span><span>Worst</span></div>
+      <div class="trend" id="trend" aria-label="Pain over the last 14 days"></div>
+    </div>
+  </section>
+
+  <div class="flags">
+    <p><strong>Stop and get seen</strong> if pain moves below the knee, or you get numbness, tingling or leg weakness.</p>
+    <p>Go to emergency for numbness in the groin or trouble controlling your bladder or bowels.</p>
+    <p>Mild stretch discomfort is fine. Sharp pain means skip that exercise.</p>
+  </div>
+
+  <div class="foot"><span id="sync"></span><button class="linkbtn" id="reset">Clear today</button></div>
+</main>
+
+<script>
+const BREAK_TARGET = 8;
+const check = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--surface)"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+
+const MORNING = [
+  {id:"m-ext", fig:"ext", name:"Standing back extensions", dose:"10 slow reps", how:"Hands on your lower back, gently lean back, then return. Keep it easy."},
+  {id:"m-walk", fig:"walk", name:"Walk around", dose:"2 minutes", how:"Make coffee, shower, or pace while checking your phone. Don’t sit yet.", hold:120}
+];
+const DAY = [
+  {id:"d-breaks", name:"Movement breaks", dose:`Aim for ${BREAK_TARGET}`, how:"Stand or walk 1–2 minutes every 30–45 minutes of sitting. Tap + each time.", counter:true},
+  {id:"d-fig4", fig:"seatfig4", name:"Seated figure-4", dose:"30 s each side", how:"Ankle over opposite knee, straight back, lean forward slightly.", hold:30},
+  {id:"d-tilt", fig:"tilt", name:"Seated pelvic tilts", dose:"10 slow reps", how:"Sit tall, rock your pelvis forward to arch, then back to round."},
+  {id:"d-squeeze", fig:"squeeze", name:"Seated glute squeezes", dose:"10 × 5 s squeeze", how:"Squeeze your glutes hard, hold, then fully relax.", hold:5},
+  {id:"d-ham", fig:"ham", name:"Seated hamstring stretch", dose:"30 s each side", how:"One leg straight, heel down. Hinge forward from the hips, back flat.", hold:30},
+  {id:"d-twist", fig:"twist", name:"Seated twist", dose:"20 s each side", how:"Sit tall, hold the armrest or chair back, and rotate gently.", hold:20},
+  {id:"d-hipr", fig:"hipr", name:"Seated hip flexor release", dose:"30 s each side", how:"Scoot to the chair edge, drop one knee down and back beside the seat, sit tall.", hold:30}
+];
+const MAIN = {
+  1:[
+    {id:"cat", name:"Cat-cow", dose:"10 slow reps", how:"On hands and knees, round your back up, then let it gently sag."},
+    {id:"fig4", name:"Figure-4 glute stretch", dose:"30 s × 2 each side", how:"Lying down, ankle over knee, pull the bottom leg toward you.", hold:30},
+    {id:"k2c", name:"Knees to chest", dose:"30 s × 2", how:"On your back, hug both knees in. Head stays down.", hold:30},
+    {id:"hipf", name:"Kneeling hip flexor stretch", dose:"30 s × 2 each side", how:"Kneel on one knee, tuck your pelvis, shift forward.", hold:30},
+    {id:"bridge", name:"Glute bridge", dose:"2 × 10, 2 s hold", how:"Squeeze glutes to lift hips into a straight line."},
+    {id:"bird", name:"Bird-dog", dose:"2 × 8 each side, 3 s hold", how:"Opposite arm and leg out, back flat like a table."},
+    {id:"deadbug", name:"Dead bug", dose:"2 × 6 each side", how:"On your back, lower opposite arm and leg slowly, lower back pressed down."},
+    {id:"splank", name:"Side plank on knees", dose:"2 × 15 s each side", how:"Elbow under shoulder, hips lifted, body in a line.", hold:15}
+  ],
+  2:[
+    {id:"cat", name:"Cat-cow", dose:"10 slow reps", how:"On hands and knees, round your back up, then let it gently sag."},
+    {id:"fig4", name:"Figure-4 glute stretch", dose:"30 s × 2 each side", how:"Lying down, ankle over knee, pull the bottom leg toward you.", hold:30},
+    {id:"k2c", name:"Knees to chest", dose:"30 s × 2", how:"On your back, hug both knees in. Head stays down.", hold:30},
+    {id:"hipf", name:"Kneeling hip flexor stretch", dose:"30 s × 2 each side", how:"Kneel on one knee, tuck your pelvis, shift forward.", hold:30},
+    {id:"bridge", name:"Glute bridge", dose:"3 × 12, 2 s hold", how:"Squeeze glutes to lift hips into a straight line."},
+    {id:"bird", name:"Bird-dog", dose:"2 × 10 each side, 5 s hold", how:"Opposite arm and leg out, back flat like a table."},
+    {id:"deadbug", name:"Dead bug", dose:"2 × 10 each side", how:"On your back, lower opposite arm and leg slowly, lower back pressed down."},
+    {id:"splank", name:"Side plank on knees", dose:"2 × 25 s each side", how:"Elbow under shoulder, hips lifted, body in a line.", hold:25}
+  ],
+  3:[
+    {id:"cat", name:"Cat-cow", dose:"10 slow reps", how:"On hands and knees, round your back up, then let it gently sag."},
+    {id:"fig4", name:"Figure-4 glute stretch", dose:"30 s × 2 each side", how:"Lying down, ankle over knee, pull the bottom leg toward you.", hold:30},
+    {id:"hipf", name:"Kneeling hip flexor stretch", dose:"30 s × 2 each side", how:"Kneel on one knee, tuck your pelvis, shift forward.", hold:30},
+    {id:"bridge", fig:"bridge1", name:"Single-leg glute bridge", dose:"2 × 8 each side", how:"One foot down, other leg straight. Keep hips level as you lift."},
+    {id:"bird", name:"Bird-dog", dose:"3 × 10 each side, 5 s hold", how:"Opposite arm and leg out, back flat like a table."},
+    {id:"deadbug", name:"Dead bug", dose:"3 × 10 each side", how:"On your back, lower opposite arm and leg slowly, lower back pressed down."},
+    {id:"splank", fig:"plankfull", name:"Full side plank", dose:"2 × 30 s each side", how:"On elbow and feet, hips lifted, body in a straight line.", hold:30},
+    {id:"hinge", name:"Hip hinge practice", dose:"2 × 10", how:"Stand, soft knees, push hips back with a flat back, then stand tall. Builds safe bending."}
+  ]
+};
+
+/* ---------- exercise illustrations ---------- */
+const G = '<line x1="6" y1="83" x2="154" y2="83" class="gnd"/>';
+const H = (x,y) => `<circle cx="${x}" cy="${y}" r="7" class="hd"/>`;
+const P = d => `<path d="${d}"/>`;
+const A = d => `<path d="${d}" class="acc"/>`;
+const FIGS = {
+  ext: H(70,13)+P("M80 50 L75 82 M80 50 L86 82 M80 50 L73 22 M73 24 L64 36 L77 45")+A("M62 8 Q52 18 56 30"),
+  walk: H(83,13)+P("M80 50 L74 66 L68 82 M80 50 L88 66 L93 82 M80 50 L82 23 M82 26 L74 40 L70 50 M82 26 L90 38 L95 47"),
+  seatfig4: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(88,16)+P("M68 52 L81 25 M68 52 L100 52 L100 82 M68 50 L91 39 L104 50 M81 27 L93 38 L98 44"),
+  cat: H(40,58)+P("M52 52 Q77 26 102 52 M52 52 L50 82 M102 52 L105 82 L130 82")+A("M54 58 Q77 74 100 58"),
+  fig4: H(28,73)+P("M36 76 L85 76 M85 76 L100 50 L122 58 M85 74 L116 63 L101 51 M46 76 L74 58 L97 55"),
+  k2c: H(28,73)+P("M36 76 L85 76 M85 76 L72 50 L94 46 M46 76 L60 56 L78 49"),
+  hipf: H(85,14)+P("M82 55 L84 23 M82 55 L68 82 L40 82 M82 55 L108 55 L110 82 M84 26 L96 40 L106 52")+A("M74 62 L64 66"),
+  bridge: H(27,73)+P("M36 76 L85 52 L110 46 L112 82 M40 78 L72 80")+A("M85 72 L85 59 M80 64 L85 58 L90 64"),
+  bridge1: H(27,73)+P("M36 76 L85 52 L110 46 L112 82 M85 52 L136 41 M40 78 L72 80")+A("M85 72 L85 59 M80 64 L85 58 L90 64"),
+  bird: H(45,40)+P("M55 50 L100 50 M55 50 L55 82 M100 50 L100 82 L122 82 M55 52 L16 58 M100 50 L146 44"),
+  deadbug: H(28,73)+P("M36 76 L80 76 M42 76 L44 40 M42 72 L16 46 M80 76 L82 48 L106 48 M80 76 L142 68"),
+  splank: H(34,52)+P("M40 82 L62 82 M40 82 L42 60 L86 69 L110 82 L128 70 M42 60 L60 61 L80 66")+A("M86 80 L86 74"),
+  plankfull: H(34,51)+P("M40 82 L62 82 M40 82 L42 59 L140 81 M42 59 L60 60 L82 66")+A("M90 80 L90 74"),
+  tilt: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(73,14)+P("M70 52 L72 24 M70 52 L100 52 L100 82 M72 27 L84 40 L96 48")+A("M64 38 Q57 46 64 54"),
+  squeeze: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(73,14)+P("M70 52 L72 24 M70 52 L100 52 L100 82 M72 27 L84 40 L96 48")+A("M66 62 L66 68 M74 62 L74 68 M82 62 L82 68"),
+  ham: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(97,23)+P("M68 52 L90 30 M68 52 L96 52 L96 82 M68 52 L128 78 L132 70 M90 32 L104 46 L112 62")+A("M98 70 L110 74"),
+  twist: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(73,14)+P("M70 52 L72 24 M70 52 L100 52 L100 82 M72 27 L62 38 L60 30 M72 27 L86 40 L80 48")+A("M84 16 Q96 22 86 32"),
+  hipr: '<path d="M58 55 H96 M60 55 V24 M62 55 V82 M94 55 V82" class="prop"/>'+H(94,14)+P("M92 52 L93 24 M92 52 L118 52 L118 82 M92 54 L102 78 L80 82 M93 27 L104 40 L114 48")+A("M98 60 L104 66"),
+  hinge: H(121,25)+P("M80 52 L112 31 M80 52 L92 66 L92 82 M110 33 L110 58")+A("M70 50 L62 50 M66 46 L62 50 L66 54")
+};
+function figSvg(key, label){
+  const inner = FIGS[key]; if(!inner) return null;
+  const wrap = document.createElement("div"); wrap.className = "fig";
+  wrap.innerHTML = `<svg viewBox="0 0 160 90" role="img" aria-label="${label.replace(/"/g,"&quot;")} illustration">${G}${inner}</svg>`;
+  return wrap;
+}
+
+const LS_KEY = "back-routine-v1";
+let state = {phase:1, days:{}};
+
+function todayKey(d=new Date()){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function dayOf(k){ return state.days[k] || (state.days[k] = {done:[], breaks:0, pain:null}); }
+function mainFor(p){ return MAIN[p] || MAIN[1]; }
+function totalItems(){ return MORNING.length + DAY.length + mainFor(state.phase).length; }
+function doneCount(k){
+  const d = state.days[k]; if(!d) return 0;
+  let n = d.done.length;
+  if((d.breaks||0) >= BREAK_TARGET) n++;
+  return n;
+}
+
+function prune(){
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-90);
+  const ck = todayKey(cutoff);
+  for(const k of Object.keys(state.days)) if(k < ck) delete state.days[k];
+}
+
+/* ---------- saving ---------- */
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); setSync("Saved on this phone"); }
+  catch(e){ setSync("Couldn’t save. Check that storage isn’t blocked."); }
+}
+function setSync(t){ document.getElementById("sync").textContent = t; }
+
+/* ---------- render ---------- */
+function renderItem(it, d, host){
+  const li = document.createElement("li");
+  const isChecked = it.counter ? (d.breaks||0) >= BREAK_TARGET : d.done.includes(it.id);
+  li.className = "item" + (isChecked ? " checked" : "");
+  const btn = document.createElement("button");
+  btn.className = "check"; btn.innerHTML = check;
+  btn.setAttribute("aria-label", (isChecked ? "Uncheck " : "Check ") + it.name);
+  btn.setAttribute("aria-pressed", isChecked ? "true" : "false");
+  btn.onclick = () => {
+    if(it.counter){ d.breaks = isChecked ? 0 : BREAK_TARGET; }
+    else if(isChecked){ d.done = d.done.filter(x => x !== it.id); }
+    else { d.done.push(it.id); }
+    save(); render();
+  };
+  const body = document.createElement("div"); body.className = "body";
+  const name = document.createElement("div"); name.className = "name"; name.textContent = it.name;
+  const dose = document.createElement("div"); dose.className = "dose"; dose.textContent = it.dose;
+  const how = document.createElement("div"); how.className = "how"; how.textContent = it.how;
+  body.append(name, dose, how);
+  const f = figSvg(it.fig || it.id, it.name);
+  if(f) body.append(f);
+  if(it.hold) body.append(makeTimer(it.hold));
+  if(it.counter){
+    const c = document.createElement("div"); c.className = "counter";
+    const minus = document.createElement("button"); minus.textContent = "−"; minus.setAttribute("aria-label","Remove a break");
+    const out = document.createElement("output"); out.textContent = (d.breaks||0) + "/" + BREAK_TARGET;
+    const plus = document.createElement("button"); plus.textContent = "+"; plus.setAttribute("aria-label","Add a break");
+    minus.onclick = () => { d.breaks = Math.max(0,(d.breaks||0)-1); save(); render(); };
+    plus.onclick = () => { d.breaks = (d.breaks||0)+1; save(); render(); };
+    c.append(minus,out,plus); body.append(c);
+  }
+  li.append(btn, body); host.append(li);
+}
+
+const timers = {};
+function makeTimer(sec){
+  const b = document.createElement("button");
+  b.className = "timer";
+  const label = sec >= 60 ? `Start ${sec/60} min` : `Start ${sec} s`;
+  b.textContent = label;
+  let iv = null, left = sec;
+  b.onclick = () => {
+    if(iv){ clearInterval(iv); iv=null; b.classList.remove("running"); b.textContent = label; return; }
+    left = sec; b.classList.add("running"); b.textContent = fmt(left);
+    iv = setInterval(() => {
+      left--;
+      if(left <= 0){
+        clearInterval(iv); iv=null; b.classList.remove("running"); b.textContent = "Done ✓";
+        try{ navigator.vibrate && navigator.vibrate([180,80,180]); }catch(e){}
+        setTimeout(() => { b.textContent = label; }, 2500);
+      } else b.textContent = fmt(left);
+    }, 1000);
+  };
+  return b;
+}
+function fmt(s){ return s >= 60 ? Math.floor(s/60)+":"+String(s%60).padStart(2,"0") : s+" s"; }
+
+function render(){
+  const k = todayKey(); const d = dayOf(k);
+  document.getElementById("date").textContent = new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+
+  document.querySelectorAll(".phase button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.phase === state.phase)));
+
+  for(const [id,list] of [["morning",MORNING],["day",DAY],["main",mainFor(state.phase)]]){
+    const host = document.getElementById(id); host.textContent = "";
+    list.forEach(it => renderItem(it, d, host));
+  }
+
+  // spine
+  const spine = document.getElementById("spine"); spine.textContent = "";
+  const total = totalItems();
+  for(let i=13;i>=0;i--){
+    const dt = new Date(); dt.setDate(dt.getDate()-i);
+    const key = todayKey(dt); const n = doneCount(key);
+    const v = document.createElement("div");
+    v.className = "vert" + (n >= total ? " done" : n >= Math.ceil(total/2) ? " part" : "") + (i===0 ? " today" : "");
+    v.title = dt.toLocaleDateString(undefined,{month:"short",day:"numeric"}) + `: ${n}/${total}`;
+    spine.append(v);
+  }
+  // streak: consecutive days with at least half done (today counts only if started)
+  let streak = 0;
+  for(let i=0;i<365;i++){
+    const dt = new Date(); dt.setDate(dt.getDate()-i);
+    const n = doneCount(todayKey(dt));
+    if(n >= Math.ceil(total/2)) streak++;
+    else if(i===0) continue;
+    else break;
+  }
+  document.getElementById("streak").textContent = streak ? `${streak}-day streak` : `Today: ${doneCount(k)}/${total}`;
+
+  // pain
+  const p = document.getElementById("pain"), po = document.getElementById("painOut");
+  if(d.pain === null || d.pain === undefined){ p.value = 0; po.textContent = "–"; }
+  else { p.value = d.pain; po.textContent = d.pain; }
+  const tr = document.getElementById("trend"); tr.textContent = "";
+  for(let i=13;i>=0;i--){
+    const dt = new Date(); dt.setDate(dt.getDate()-i);
+    const v = state.days[todayKey(dt)]?.pain;
+    const bar = document.createElement("div");
+    if(v === null || v === undefined) bar.className = "empty";
+    else bar.style.height = Math.max(4, v*10) + "%";
+    bar.title = dt.toLocaleDateString(undefined,{month:"short",day:"numeric"}) + (v==null ? ": no entry" : `: ${v}/10`);
+    tr.append(bar);
+  }
+}
+
+document.querySelectorAll(".phase button").forEach(b => b.onclick = () => { state.phase = +b.dataset.phase; save(); render(); });
+document.getElementById("pain").addEventListener("input", e => {
+  const d = dayOf(todayKey()); d.pain = +e.target.value;
+  document.getElementById("painOut").textContent = d.pain;
+});
+document.getElementById("pain").addEventListener("change", () => { save(); render(); });
+document.getElementById("reset").onclick = () => {
+  if(!confirm("Clear today’s checkmarks, breaks and pain entry?")) return;
+  state.days[todayKey()] = {done:[], breaks:0, pain:null}; save(); render();
+};
+
+/* ---------- load ---------- */
+try{
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){ const s = JSON.parse(raw); if(s && s.days) state = {phase:s.phase||1, days:s.days}; }
+}catch(e){}
+prune(); render(); setSync("Saved on this phone");
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
